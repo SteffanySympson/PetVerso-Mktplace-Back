@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id                   String   @id @unique @default(uuid())
+  name                 String
+  email                String   @unique
+  username             String
+  password             String
+  passwordConfirmation String
+  role                 String   @default("USER")
+  cpf                  String   @unique
+  birthday             String
+  city                 String
+  state                String
+  cep                  String
+  phone                String
+  address1             String?
+  address2             String?
+  createdAt            DateTime @default(now())
+  carts                Cart[]
+}
+
+model Company {
+  id                   String    @id @unique @default(uuid())
+  username             String    @unique
+  birthday             String
+  phone                String
+  password             String
+  passwordConfirmation String
+  corporateName        String
+  email                String    @unique
+  cnpj                 String    @unique
+  city                 String
+  state                String
+  address1             String?
+  address2             String?
+  cep                  String
+  role                 String    @default("USER_COM")
+  createdAt            DateTime  @default(now())
+  products             Product[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+}
+
+model Cart {
+  id          String        @id @unique @default(uuid())
+  createdAt   DateTime      @default(now())
+  userID      String        @unique
+  user        User?         @relation(fields: [userID], references: [id])
+  productList ProductCart[]
+  closed      Boolean       @default(false)
+}
+
+model ProductCart {
+  id          String  @id @unique @default(uuid())
+  cartId      String
+  cart        Cart    @relation(fields: [cartId], references: [id])
+  productID   String  @unique
+  product     Product @relation(fields: [productID], references: [id])
+  productQnty Int
+  totalPrice  Decimal
+}
+
+model Product {
+  id           String        @id @unique @default(uuid())
+  name         String
+  imgUrl       String
+  animalType   String
+  price        Decimal
+  description  String
+  contains     String
+  restrictions String
+  quantity     Int
+  updatedAt    DateTime      @updatedAt
+  addedAt      DateTime      @default(now())
+  companyID    String
+  categoryID   Int
+  company      Company?      @relation(fields: [companyID], references: [id])
+  categories   Category?     @relation(fields: [categoryID], references: [id])
+  session      ProductCart[]
+}
